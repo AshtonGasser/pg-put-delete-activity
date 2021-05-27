@@ -3,6 +3,7 @@ const router = express.Router();
 
 const pool = require('../modules/pool');
 
+
 // Get all books
 router.get('/', (req, res) => {
   let queryText = 'SELECT * FROM "books" ORDER BY "title";';
@@ -39,10 +40,54 @@ router.post('/',  (req, res) => {
 // Request must include a parameter indicating what book to update - the id
 // Request body must include the content to update - the status
 
+router.put("/:id", (req, res) => {
+  const titleId = req.params.id;
+  // Change the rank of the book by the user ..
+  // expected values = 'up' OR 'down';
+  let direction = req.body.direction;
+
+  let queryString = "";
+  if (direction === "up") {
+    queryString = 'UPDATE "title" SET "isRead"=TRUE WHERE "title".id = $1';
+  } else if (direction === "down") {
+    queryString = 'UPDATE "title" SET "isRead"=FALSE WHERE "title".id = $1;';
+  } else {
+    res.sendStatus(500);
+    return; // early exit since its an error
+  }
+  pool
+    .query(queryString, [titleId])
+    .then((response) => {
+      console.log(response.rowCount);
+      res.sendStatus(202);
+    })
+    .catch((err) => {
+      console.log("ya done goofed", err);
+      res.sendStatus(500);
+    });
+});
 
 // TODO - DELETE 
 // Removes a book to show that it has been read
 // Request must include a parameter indicating what book to update - the id
 
+router.delete("/:id", (req, res) => {
+  const itemToDelete = req.params.id;
+  const queryString = `DELETE  FROM "title" WHERE "title".id =$1`;
+  pool
+    .query(queryString, [itemToDelete])
+    //don't need parsems around single argument for arrow function ...
+    // same as .then ((response) => {
+
+    .then((response) => {
+      console.log(`We deleted title with id ${itemToDelete}. `);
+      res.sendStatus(200);
+    })
+    .catch((err) => {
+      //must catch for promises...
+      console.log("you done goofed", err);
+      res.sendStatus(500); //always send a 500 for an error in the process.
+    });
+  });
 
 module.exports = router;

@@ -2,13 +2,32 @@ $(document).ready(function(){
   console.log('jQuery sourced.');
   refreshBooks();
   addClickHandlers();
+  deleteBookHandler()
 });
 
 function addClickHandlers() {
   $('#submitBtn').on('click', handleSubmit);
-
+  $('#deleteBtn').on('click',)
   // TODO - Add code for edit & delete buttons
 }
+function deleteBookHandler() {
+  deleteBook($(this).data("id"));
+}
+function deleteBook(titleId) {
+  $.ajax({
+    method: "DELETE",
+    url: `/awesome_reads/${titleId}`,
+  })
+    .then((response) => {
+      console.log("BYE BYE!");
+      renderBooks();
+    })
+    .catch((err) => {
+      alert("there was a problem deleting that book. Please try again.", err);
+    });
+}
+
+
 
 function handleSubmit() {
   console.log('Submit button clicked.');
